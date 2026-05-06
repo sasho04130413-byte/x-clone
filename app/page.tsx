@@ -26,7 +26,7 @@ export default function Home() {
   const fetchPosts = useCallback(async () => {
     const { data } = await supabase
       .from('posts')
-      .select('id, content, created_at, user_id, profiles(username)')
+      .select('id, content, created_at, user_id, profiles!posts_user_id_profiles_fkey(username)')
       .order('created_at', { ascending: false })
       .limit(50)
     if (data) setPosts(data as unknown as Post[])
