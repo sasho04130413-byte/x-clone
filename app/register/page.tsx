@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -18,10 +19,10 @@ export default function RegisterPage() {
     setError('')
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
 
     if (error) {
-      if (error.message.includes('already registered')) {
+      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
         setError('このメールアドレスは既に登録済み')
       } else {
         setError(error.message)
@@ -30,8 +31,33 @@ export default function RegisterPage() {
       return
     }
 
-    router.push('/')
-    router.refresh()
+    if (data.session) {
+      router.push('/')
+      router.refresh()
+    } else {
+      setDone(true)
+      setLoading(false)
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="text-4xl mb-4">📧</div>
+          <h2 className="text-xl font-bold mb-3">確認メール 送信した</h2>
+          <p className="text-gray-400 text-sm mb-2">
+            <span className="text-white">{email}</span> に 確認メール 届いた
+          </p>
+          <p className="text-gray-400 text-sm mb-6">
+            メール 開いて リンク クリック → ログインできる
+          </p>
+          <Link href="/login" className="text-blue-400 hover:text-blue-300 text-sm">
+            ログインページ へ
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
